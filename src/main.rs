@@ -17,6 +17,7 @@ const UI_WIDTH_P: f64 = 150.;
 
 const AXE_LENGTH_N: f32 = 0.24;
 
+const X_INIT_POS_N: f32 = 0.05;
 const Y_INIT_POS_N: f32 = -0.06;
 const Z_INIT_POS_N: f32 = -0.4;
 
@@ -117,27 +118,89 @@ fn draw_ui(ui_cell: &mut UiCell, ids: &Ids, rot: &mut Rotation) {
 }
 
 fn draw_axes(window: &mut Window) {
-    let half_axe = AXE_LENGTH_N / 2.0;
-
-    let init_shift = Vector3::new(0.0, Y_INIT_POS_N, Z_INIT_POS_N);
-
+    let color = Point3::new(0.0, 0.0, 0.0);
+    let init_shift = Vector3::new(X_INIT_POS_N, Y_INIT_POS_N, Z_INIT_POS_N);
     let init_rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), Y_INIT_ROT);
 
+    // Axes
+    let half_axe = AXE_LENGTH_N / 2.0;
+
+    window.set_line_width(1.0);
     window.draw_line(
         &init_rot.transform_point(&Point3::new(half_axe, 0.0, 0.0)).add(init_shift),
         &init_rot.transform_point(&Point3::new(-half_axe, 0.0, 0.0)).add(init_shift), 
-        &Point3::new(0.0, 0.0, 0.0)
+        &color
     );
     window.draw_line(
         &Point3::new(0.0, half_axe, 0.0).add(init_shift), 
         &Point3::new(0.0, -half_axe, 0.0).add(init_shift), 
-        &Point3::new(0.0, 0.0, 0.0)
+        &color
     );
     window.draw_line(
         &init_rot.transform_point(&Point3::new(0.0, 0.0, half_axe)).add(init_shift), 
         &init_rot.transform_point(&Point3::new(0.0, 0.0, -half_axe)).add(init_shift), 
-        &Point3::new(0.0, 0.0, 0.0)
+        &color
     );
+
+    // Labels
+    let label_w = 0.01;
+    let label_h = 0.015;
+    let label_shift = 0.01;
+    
+    window.set_line_width(2.0);
+    // X
+    // /
+    window.draw_line(
+        &init_rot.transform_point(&Point3::new(half_axe + label_shift + label_w, 0.0, 0.0)).add(init_shift),
+        &init_rot.transform_point(&Point3::new(half_axe + label_shift, label_h, 0.0)).add(init_shift), 
+        &color
+    );
+    // \
+    window.draw_line(
+        &init_rot.transform_point(&Point3::new(half_axe + label_shift, 0.0, 0.0)).add(init_shift),
+        &init_rot.transform_point(&Point3::new(half_axe + label_shift + label_w, label_h, 0.0)).add(init_shift), 
+        &color
+    );
+    // Y
+    let v_ratio = 0.55;
+    // |
+    window.draw_line(
+        &Point3::new(0.0, half_axe + label_shift, 0.0).add(init_shift),
+        &Point3::new(0.0, half_axe + label_shift + label_h * v_ratio, 0.0).add(init_shift), 
+        &color
+    );
+    // /
+    window.draw_line(
+        &Point3::new(0.0,half_axe + label_shift + label_h * v_ratio, 0.0).add(init_shift),
+        &Point3::new(label_w / 2.0, half_axe + label_shift + label_h, 0.0).add(init_shift), 
+        &color
+    );
+    // \
+    window.draw_line(
+        &Point3::new(0.0,half_axe + label_shift + label_h * v_ratio, 0.0).add(init_shift),
+        &Point3::new(-label_w / 2.0, half_axe + label_shift + label_h, 0.0).add(init_shift), 
+        &color
+    );
+    // Z
+    // _
+    window.draw_line(
+        &init_rot.transform_point(&Point3::new(0.0, 0.0, half_axe + label_shift + label_w)).add(init_shift),
+        &init_rot.transform_point(&Point3::new(0.0, 0.0, half_axe + label_shift)).add(init_shift), 
+        &color
+    );
+    // -
+    window.draw_line(
+        &init_rot.transform_point(&Point3::new(0.0, label_h, half_axe + label_shift + label_w)).add(init_shift),
+        &init_rot.transform_point(&Point3::new(0.0, label_h, half_axe + label_shift)).add(init_shift), 
+        &color
+    );
+    // /
+    window.draw_line(
+        &init_rot.transform_point(&Point3::new(0.0, 0.0, half_axe + label_shift + label_w)).add(init_shift),
+        &init_rot.transform_point(&Point3::new(0.0, label_h, half_axe + label_shift)).add(init_shift), 
+        &color
+    );
+
 }
 
 fn main() {
@@ -163,8 +226,8 @@ fn main() {
     let ids = Ids::new(window.conrod_ui_mut().widget_id_generator());
 
     while window.render_with_camera(&mut camera) {
-
-        teapot.set_local_translation(Translation3::new(0.0, Y_INIT_POS_N, Z_INIT_POS_N));
+    //while window.render() {
+        teapot.set_local_translation(Translation3::new(X_INIT_POS_N, Y_INIT_POS_N, Z_INIT_POS_N));
         teapot.set_local_rotation(init_rot * rotation.x() * rotation.y() * rotation.z());
 
         draw_axes(&mut window);
